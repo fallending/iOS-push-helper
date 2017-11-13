@@ -67,7 +67,8 @@ SmartPush, 一款IOS苹果推送测试程序, Mac OS下的apns工具APP
 1. [iOS开发API解读之SSL/TLS连接](http://www.jianshu.com/p/ad22f608690f)
 2. [iOS开发中MQTTKit的TLS/SSL支持方案](http://www.jianshu.com/p/1c9075fe1e55)
 3. [iOS开发适配HTTPS详细教程](https://www.2cto.com/kf/201611/570823.html)
-4. [极光推送](http://docs.jiguang.cn/jpush/client/iOS/ios_sdk/), [极光SDK](http://www.umeng.com/codecenter.html)
+4. [史上最全解析Android消息推送解决方案](http://www.jianshu.com/p/b61a49e0279f)
+5. [极光推送](http://docs.jiguang.cn/jpush/client/iOS/ios_sdk/), [极光SDK](http://www.umeng.com/codecenter.html)
 
 ## 其他推送相关的项目
 
