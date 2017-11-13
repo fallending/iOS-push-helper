@@ -6,16 +6,16 @@
 //  Copyright (c) 2015年 www.skyfox.org. All rights reserved.
 //
 
-#define Push_Developer  "gateway.sandbox.push.apple.com"
-#define Push_Production  "gateway.push.apple.com"
+#define Push_Developer          "gateway.sandbox.push.apple.com"
+#define Push_Production         "gateway.push.apple.com"
 
 
 
-#define KEY_Developer_CER   @"KEY_Developer_CER"
-#define KEY_Production_CER @"KEY_Production_CER"
-#define KEY_Developer_TOKEN @"KEY_Developer_TOKEN"
-#define KEY_Production_TOKEN @"KEY_Production_TOKEN"
-#define KEY_Payload         @"KEY_Payload"
+#define KEY_Developer_CER       @"KEY_Developer_CER"
+#define KEY_Production_CER      @"KEY_Production_CER"
+#define KEY_Developer_TOKEN     @"KEY_Developer_TOKEN"
+#define KEY_Production_TOKEN    @"KEY_Production_TOKEN"
+#define KEY_Payload             @"KEY_Payload"
 
 #import "PushViewController.h"
 
@@ -32,9 +32,12 @@
     [self modeSwitch:self.devSelect];
 }
 
-#pragma mark Private
--(void)loadUserData{
-    NSLog(@"load userdefaults");
+#pragma mark - Private
+
+- (void)loadUserData {
+    
+    NSLog(@"============ load userdefaults");
+    
     _defaults = [NSUserDefaults standardUserDefaults];
     if ([_defaults valueForKey:KEY_Developer_CER])
         [self.devCer setStringValue:[_defaults valueForKey:KEY_Developer_CER]];
@@ -49,7 +52,8 @@
         [self.payload setStringValue:[_defaults valueForKey:KEY_Payload]];
     
 }
--(void)saveUserData{
+
+- (void)saveUserData {
     [_defaults setValue:self.devCer.stringValue forKey:KEY_Developer_CER];
     [_defaults setValue:self.productCer.stringValue forKey:KEY_Production_CER];
     [_defaults setValue:self.devToken.stringValue forKey:KEY_Developer_TOKEN];
@@ -57,12 +61,14 @@
     [_defaults setValue:self.payload.stringValue forKey:KEY_Payload];
     [_defaults synchronize];
 }
+
 - (void)disconnect {
-    NSLog(@"disconnect");
+    NSLog(@"============ disconnect");
     
     // OSStatus result;
     
-   // NSLog(@"SSLClose(): %d", _closeResult);
+    NSLog(@"------ SSLClose(): %d", _closeResult);
+    
     if (_closeResult != 0) {
         return;
     }
@@ -91,17 +97,20 @@
     
 }
 
-#pragma mark --IBAction
+#pragma mark - IBAction
+
 - (IBAction)connect:(id)sender {
     
     //测试开发环境
     if (self.devSelect == self.mode.selectedCell) {
         _cerPath = self.devCer.stringValue;
     }
+    
     //生产正式环境
     if (self.productSelect == self.mode.selectedCell) {
         _cerPath = self.productCer.stringValue;
     }
+    
     if(_cerPath == nil || [_cerPath isEqualToString:@""]) {
         [self showMessage:@"APNS证书.cer文件路径未指定"];
         return;
@@ -118,80 +127,143 @@
     //测试开发环境
     if (self.devSelect == self.mode.selectedCell) {
         _connectResult = MakeServerConnection(Push_Developer, 2195, &socket, &peer);
-        // NSLog(@"MakeServerConnection(): %d", result);
+        
+         NSLog(@"------ [dev]MakeServerConnection(): %d", _connectResult);
+        
+        if (_connectResult != 0) {
+            
+            [self showMessage:[NSString stringWithFormat:@"[dev]MakeServerConnection报错：%d", _connectResult]];
+            
+            return;
+        }
     }
     
     //生产正式环境
     if (self.productSelect == self.mode.selectedCell) {
         _connectResult = MakeServerConnection(Push_Production, 2195, &socket, &peer);
-        // NSLog(@"MakeServerConnection(): %d", result);
+        
+        NSLog(@"------ [dis]MakeServerConnection(): %d", _connectResult);
+        
+        if (_connectResult != 0) {
+            
+            [self showMessage:[NSString stringWithFormat:@"[dis]MakeServerConnection报错：%d", _connectResult]];
+            
+            return;
+        }
     }
     
     
     // Create new SSL context.
     _connectResult = SSLNewContext(false, &context);
-    // NSLog(@"SSLNewContext(): %d", result);
+    
+    NSLog(@"------ SSLNewContext(): %d", _connectResult);
+    
+    if (_connectResult != 0) {
+        
+        [self showMessage:[NSString stringWithFormat:@"SSLNewContext报错：%d", _connectResult]];
+        
+        return;
+    }
     
     // Set callback functions for SSL context.
     _connectResult = SSLSetIOFuncs(context, SocketRead, SocketWrite);
-    // NSLog(@"SSLSetIOFuncs(): %d", result);
+    
+    NSLog(@"------ SSLSetIOFuncs(): %d", _connectResult);
+    
+    if (_connectResult != 0) {
+        
+        [self showMessage:[NSString stringWithFormat:@"SSLSetIOFuncs报错：%d", _connectResult]];
+        
+        return;
+    }
     
     // Set SSL context connection.
     _connectResult = SSLSetConnection(context, socket);
-    // NSLog(@"SSLSetConnection(): %d", result);
     
+    NSLog(@"------ SSLSetConnection(): %d", _connectResult);
     
+    if (_connectResult != 0) {
+        
+        [self showMessage:[NSString stringWithFormat:@"SSLSetConnection报错：%d", _connectResult]];
+        
+        return;
+    }
     
     //测试环境
     if (self.devSelect == self.mode.selectedCell) {
         // Set server domain name.
         _connectResult = SSLSetPeerDomainName(context, Push_Developer, 30);
-        // NSLog(@"SSLSetPeerDomainName(): %d", result);
+        
+        NSLog(@"------ [dev]SSLSetPeerDomainName(): %d", _connectResult);
+        
+        if (_connectResult != 0) {
+            
+            [self showMessage:[NSString stringWithFormat:@"[dev]SSLSetPeerDomainName报错：%d", _connectResult]];
+            
+            return;
+        }
     }
     
     //生产正式环境
     if (self.productSelect == self.mode.selectedCell) {
         //生产正式环境
         _connectResult = SSLSetPeerDomainName(context,Push_Production, 22);
-        // NSLog(@"SSLSetPeerDomainName(): %d", result);
+        
+        NSLog(@"------ [dis]SSLSetPeerDomainName(): %d", _connectResult);
+        
+        if (_connectResult != 0) {
+            
+            [self showMessage:[NSString stringWithFormat:@"[dis]SSLSetPeerDomainName报错：%d", _connectResult]];
+            
+            return;
+        }
     }
     
     
     // Open keychain.
     _connectResult = SecKeychainCopyDefault(&keychain);
-    // NSLog(@"SecKeychainOpen(): %d", result);
+    
+    NSLog(@"------ SecKeychainCopyDefault(): %d", _connectResult);
+    
+    if (_connectResult != 0) {
+        
+        [self showMessage:[NSString stringWithFormat:@"SecKeychainCopyDefault报错：%d", _connectResult]];
+        
+        return;
+    }
+    
     [self prepareCerData];
-    
-    
 }
--(void)resetConnect{
+
+- (void)resetConnect {
     _connectResult = -50;
     [self disconnect];
 }
--(NSString*)buildToken:(NSTextField*)text{
+
+- (NSString *)buildToken:(NSTextField *)text {
     // Validate input.
     NSMutableString* tempString;
     
-    if(![text.stringValue rangeOfString:@" "].length)
-    {
+    if(![text.stringValue rangeOfString:@" "].length) {
         //put in spaces in device token
         tempString =  [NSMutableString stringWithString:text.stringValue];
         int offset = 0;
-        for(int i = 0; i < tempString.length; i++)
-        {
-            if(i%8 == 0 && i != 0 && i+offset < tempString.length-1)
-            {
+        for(int i = 0; i < tempString.length; i++) {
+            if(i%8 == 0 && i != 0 && i+offset < tempString.length-1) {
                 //NSLog(@"i = %d + offset[%d] = %d", i, offset, i+offset);
                 [tempString insertString:@" " atIndex:i+offset];
                 offset++;
             }
         }
+        
         NSLog(@"格式化token: '%@'", tempString);
+        
         text.stringValue = tempString;
     }
     return text.stringValue;
 }
--(void)prepareCerData{
+
+- (void)prepareCerData {
     
     // Create certificate.
     if (self.devSelect == self.mode.selectedCell) {
@@ -206,19 +278,36 @@
     NSData *certificateData = [NSData dataWithContentsOfFile:_cerPath];
     
     certificate = SecCertificateCreateWithData(kCFAllocatorDefault, (__bridge CFDataRef)certificateData);
-    if (certificate == NULL){
+    if (certificate == NULL) {
         [self showMessage:@"读取证书失败!"];
     }
 
     
     // Create identity.
     _connectResult = SecIdentityCreateWithCertificate(keychain, certificate, &identity);
-    // NSLog(@"SecIdentityCreateWithCertificate(): %d", result);
+    
+    NSLog(@"------ SecIdentityCreateWithCertificate(): %d", _connectResult);
+    
+    if (_connectResult != 0) {
+        
+        [self showMessage:[NSString stringWithFormat:@"SecIdentityCreateWithCertificate报错：%d", _connectResult]];
+        
+        return;
+    }
     
     // Set client certificate.
     CFArrayRef certificates = CFArrayCreate(NULL, (const void **)&identity, 1, NULL);
     _connectResult = SSLSetCertificate(context, certificates);
-    // NSLog(@"SSLSetCertificate(): %d", result);
+    
+     NSLog(@"------ SSLSetCertificate(): %d", _connectResult);
+    
+    if (_connectResult != 0) {
+        
+        [self showMessage:[NSString stringWithFormat:@"SSLSetCertificate()报错：%d", _connectResult]];
+        
+        return;
+    }
+    
     CFRelease(certificates);
     
     // Perform SSL handshake.
@@ -226,18 +315,29 @@
         _connectResult = SSLHandshake(context);
         // NSLog(@"SSLHandshake(): %d", result);
     } while(_connectResult == errSSLWouldBlock);
+
+     NSLog(@"------ SSLHandshake(): %d", _connectResult);
     
+    if (_connectResult != 0) {
+        
+        [self showMessage:[NSString stringWithFormat:@"SSLHandshake()报错：%d", _connectResult]];
+    } else {
+        [self showMessage:[NSString stringWithFormat:@"连接服务器成功"]];
+    }
 }
+
 - (IBAction)push:(id)sender {
     [self saveUserData];
 
     if (self.devSelect == self.mode.selectedCell) {
         _cerPath = self.devCer.stringValue;
     }
+    
     //生产正式环境
     if (self.productSelect == self.mode.selectedCell) {
         _cerPath = self.productCer.stringValue;
     }
+    
     if(_cerPath == nil || [_cerPath isEqualToString:@""]) {
         [self showMessage:@"APNS证书.cer文件路径未指定"];
 
@@ -298,10 +398,12 @@
     // Send message over SSL.
     size_t processed = 0;
     OSStatus result = SSLWrite(context, &message, (pointer - message), &processed);
+    
     NSLog(@"SSLWrite(): %d %zd", result, processed);
-    if (result == noErr){
+    
+    if (result == noErr) {
         [self showMessage:@"发送成功"];
-    }else{
+    } else {
         [self showMessage:@"发送失败"];
     }
 }
@@ -325,16 +427,19 @@
         
     }
 }
-#pragma mark -- 证书浏览
+#pragma mark - 证书浏览
+
 - (IBAction)devCerBrowse:(id)sender {
     [self resetConnect];
     [self.devCer setStringValue:[self browseDone]];
 }
+
 - (IBAction)productCerBrowse:(id)sender {
     [self resetConnect];
     [self.productCer setStringValue:[self browseDone]];
 }
--(NSString*)browseDone{
+
+- (NSString *)browseDone {
     NSOpenPanel* openDlg = [NSOpenPanel openPanel];
     
     [openDlg setCanChooseFiles:TRUE];
@@ -344,15 +449,17 @@
     [openDlg setAllowedFileTypes:@[@"cer", @"CER"]];
     
     NSString* fileNameOpened;
-    if ([openDlg runModal] == NSOKButton)
+    if ([openDlg runModal] == NSModalResponseOK)
     {
         fileNameOpened = [[[openDlg URLs] objectAtIndex:0] path];
         //[self.productCer setStringValue:fileNameOpened];
     }
     return fileNameOpened?:@"";
 }
-#pragma mark --alert
--(void)showMessage:(NSString*)message{
+
+#pragma mark - alert
+
+- (void)showMessage:(NSString *)message {
     NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText:message];
     [alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse returnCode) {
@@ -360,6 +467,7 @@
     }];
     
 }
+
 - (void)showAlert:(NSAlertStyle)style title:(NSString *)title message:(NSString *)message {
     NSAlert *alert = [[NSAlert alloc] init];
     [alert addButtonWithTitle:@"OK"];
@@ -372,25 +480,24 @@
 #pragma mark -- text field delegate
 
 - (void)controlTextDidEndEditing:(NSNotification *)obj{
-    if(obj.object == self.devToken || obj.object == self.productToken)
-    {
+    if(obj.object == self.devToken || obj.object == self.productToken) {
         NSTextField *text =  obj.object;
         [self buildToken:text];
     }
-    if(obj.object == self.devCer || obj.object == self.productCer)
-    {
+    
+    if(obj.object == self.devCer || obj.object == self.productCer) {
         [self resetConnect];
     }
 }
 
-- (void)controlTextDidChange:(NSNotification *)obj{
-    if(obj.object == self.devCer || obj.object == self.productCer)
-    {
+- (void)controlTextDidChange:(NSNotification *)obj {
+    if(obj.object == self.devCer || obj.object == self.productCer) {
         [self resetConnect];
 
     }
 
 }
+
 - (void)setRepresentedObject:(id)representedObject {
     [super setRepresentedObject:representedObject];
     
