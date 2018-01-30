@@ -69,6 +69,8 @@ SmartPush, 一款IOS苹果推送测试程序, Mac OS下的apns工具APP
 3. [iOS开发适配HTTPS详细教程](https://www.2cto.com/kf/201611/570823.html)
 4. [史上最全解析Android消息推送解决方案](http://www.jianshu.com/p/b61a49e0279f)
 5. [极光推送](http://docs.jiguang.cn/jpush/client/iOS/ios_sdk/), [极光SDK](http://www.umeng.com/codecenter.html)
+6. [iOS 推送证书的配置 从cer证书到pem文件](http://blog.csdn.net/MinJing_Lin/article/details/51201857)
+
 
 ## 其他推送相关的项目
 
